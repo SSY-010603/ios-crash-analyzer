@@ -1,0 +1,93 @@
+{
+  "incident_id": "D4E5F6A7-B8C9-0123-DEFA-123456789003",
+  "timestamp": "2024-01-18T08:22:33.112Z",
+  "app": "MyShoppingApp",
+  "procName": "MyShoppingApp",
+  "pid": 3344,
+  "bundleID": "com.example.myshoppingapp",
+  "bundleVersion": "2.3.2",
+  "osVersion": "iPhone OS 17.3 (21D50)",
+  "modelCode": "iPhone16,1",
+  "cpuType": "ARM-64",
+  "exception": {
+    "type": "EXC_BAD_ACCESS",
+    "codes": "KERN_INVALID_ADDRESS at 0x0000000000000000",
+    "crashed_thread": 2
+  },
+  "threads": [
+    {
+      "name": "com.apple.main-thread",
+      "triggered": false,
+      "frames": [
+        { "imageIndex": 2, "imageOffset": 3124, "symbol": "mach_msg2_trap" },
+        { "imageIndex": 3, "imageOffset": 9876, "symbol": "CFRunLoopRunSpecific" }
+      ]
+    },
+    {
+      "name": "com.apple.URLSession-delegate",
+      "triggered": false,
+      "frames": [
+        { "imageIndex": 4, "imageOffset": 1234, "symbol": "-[NSURLSessionTask _didReceiveResponse:completionHandler:]" },
+        { "imageIndex": 0, "imageOffset": 55680, "symbol": "-[NetworkManager handleResponse:data:error:]" }
+      ]
+    },
+    {
+      "name": "com.example.myshoppingapp.db-write",
+      "triggered": true,
+      "frames": [
+        { "imageIndex": 1, "imageOffset": 0, "symbol": "objc_msgSend + 32" },
+        { "imageIndex": 0, "imageOffset": 89120, "symbol": "-[DatabaseManager saveProduct:]" },
+        { "imageIndex": 0, "imageOffset": 89456, "symbol": "-[DatabaseManager bulkSave:]" },
+        { "imageIndex": 0, "imageOffset": 45678, "symbol": "-[ProductSyncManager syncProducts:completion:]" },
+        { "imageIndex": 0, "imageOffset": 44890, "symbol": "-[ProductSyncManager startSync]" },
+        { "imageIndex": 5, "imageOffset": 23456, "symbol": "_dispatch_call_block_and_release" },
+        { "imageIndex": 5, "imageOffset": 34567, "symbol": "_dispatch_client_callout" },
+        { "imageIndex": 5, "imageOffset": 45678, "symbol": "_dispatch_queue_serial_drain" }
+      ]
+    }
+  ],
+  "usedImages": [
+    {
+      "name": "MyShoppingApp",
+      "arch": "arm64",
+      "base": 4296359936,
+      "uuid": "ABCDEF1234567890ABCDEF1234567890",
+      "path": "/var/containers/Bundle/Application/DDDDDDDD/MyShoppingApp.app/MyShoppingApp"
+    },
+    {
+      "name": "libobjc.A.dylib",
+      "arch": "arm64",
+      "base": 6887759872,
+      "uuid": "FEDCBA0987654321FEDCBA0987654321",
+      "path": "/usr/lib/libobjc.A.dylib"
+    },
+    {
+      "name": "libsystem_kernel.dylib",
+      "arch": "arm64",
+      "base": 6878896128,
+      "uuid": "11223344556677881122334455667788",
+      "path": "/usr/lib/system/libsystem_kernel.dylib"
+    },
+    {
+      "name": "CoreFoundation",
+      "arch": "arm64",
+      "base": 6870671360,
+      "uuid": "AABBCCDDEEFF0011AABBCCDDEEFF0011",
+      "path": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation"
+    },
+    {
+      "name": "Foundation",
+      "arch": "arm64",
+      "base": 6978125824,
+      "uuid": "00112233445566778899AABBCCDDEEFF",
+      "path": "/System/Library/Frameworks/Foundation.framework/Foundation"
+    },
+    {
+      "name": "libdispatch.dylib",
+      "arch": "arm64",
+      "base": 6879903744,
+      "uuid": "FFEEDDCCBBAA99887766554433221100",
+      "path": "/usr/lib/system/libdispatch.dylib"
+    }
+  ]
+}

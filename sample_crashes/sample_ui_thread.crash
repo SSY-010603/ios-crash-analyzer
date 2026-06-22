@@ -1,0 +1,59 @@
+Incident Identifier: E5F6A7B8-C9D0-1234-EFAB-234567890004
+CrashReporter Key:   mno345pqr678mno345pqr678mno345pqr678mno3
+Hardware Model:      iPhone13,4
+Process:             MyShoppingApp [7890]
+Path:                /private/var/containers/Bundle/Application/AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA/MyShoppingApp.app/MyShoppingApp
+Identifier:          com.example.myshoppingapp
+Version:             2.2.9 (229)
+Code Type:           ARM-64 (Native)
+Role:                Foreground
+Parent Process:      launchd [1]
+
+Date/Time:           2024-01-14 18:45:09.332 +0800
+OS Version:          iPhone OS 16.7.2 (20H115)
+Release Type:        User
+Report Version:      104
+
+Exception Type:  EXC_CRASH (SIGABRT)
+Exception Codes: 0x0000000000000000, 0x0000000000000000
+Termination Reason: Namespace SIGNAL, Code 6 Abort trap: 6
+Triggered by Thread:  0
+
+Application Specific Information:
+*** Terminating app due to uncaught exception 'NSInternalInconsistencyException',
+reason: 'UITableView was told to layout its visible cells and other contents without being in the view hierarchy (the table's window is nil). This is not allowed.'
+abort() called
+
+Thread 0 name:  Dispatch queue: com.apple.main-thread
+Thread 0 Crashed:
+0   libsystem_kernel.dylib          0x00000001987ab234 __pthread_kill + 8
+1   libsystem_pthread.dylib         0x00000001987bc345 pthread_kill + 288
+2   libsystem_c.dylib               0x00000001987cd456 abort + 128
+3   libc++abi.dylib                 0x0000000199abc123 abort_message + 232
+4   libobjc.A.dylib                 0x000000019b2c7820 _ZL20_objc_terminate_handlerv + 224
+5   libc++abi.dylib                 0x0000000199abe345 std::__terminate(void (*)()) + 20
+6   libc++abi.dylib                 0x0000000199abf456 __cxa_rethrow + 100
+7   libobjc.A.dylib                 0x000000019b2c7900 objc_exception_rethrow + 64
+8   CoreFoundation                  0x000000019a1bc234 CFRunLoopRunSpecific + 676
+9   GraphicsServices                0x00000001e1abc123 GSEventRunModal + 164
+10  UIKitCore                       0x00000001c2389abc -[UIApplication _run] + 888
+11  UIKitCore                       0x00000001c238bcde UIApplicationMain + 340
+12  MyShoppingApp                   0x000000010023abcd main + 52
+
+Last Exception Backtrace:
+0   CoreFoundation                  0x00000001987abc12 __exceptionPreprocess + 172
+1   libobjc.A.dylib                 0x000000019b2c7820 objc_exception_throw + 60
+2   UIKitCore                       0x00000001c1234abc -[UITableView _assertNotInHierarchy] + 0
+3   UIKitCore                       0x00000001c1234bcd -[UITableView layoutSubviews] + 240
+4   UIKitCore                       0x00000001c1234cde -[UIView layoutIfNeeded] + 320
+5   MyShoppingApp                   0x000000010024abcd -[OrderListViewController refreshData:] + 128
+6   MyShoppingApp                   0x000000010024bcde __30-[OrderListViewController init]_block_invoke + 64
+7   libdispatch.dylib               0x00000001987de567 _dispatch_call_block_and_release + 32
+8   libdispatch.dylib               0x00000001987ef678 _dispatch_client_callout + 20
+9   libdispatch.dylib               0x00000001987f0789 _dispatch_main_queue_callback_4CF + 952
+10  CoreFoundation                  0x000000019a1bc234 __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__ + 16
+
+Binary Images:
+       0x100228000 -        0x10025bfff MyShoppingApp arm64  <abcdef1234567890abcdef1234567890> /var/containers/Bundle/Application/AAAAAAAA/MyShoppingApp.app/MyShoppingApp
+    0x19b2c0000 -     0x19b2f0000 libobjc.A.dylib arm64  <fedcba0987654321fedcba0987654321> /usr/lib/libobjc.A.dylib
+    0x1c1000000 -    0x1c4ffffff UIKitCore arm64  <aabbccddeeff0011aabbccddeeff0011> /System/Library/PrivateFrameworks/UIKitCore.framework/UIKitCore

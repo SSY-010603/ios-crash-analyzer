@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+{% block title %}Dashboard – iOS Crash Analyzer{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="fw-bold mb-1" style="font-size:1.8rem;">
+            <i class="bi bi-speedometer2 text-accent me-2"></i>Crash Dashboard
+        </h1>
+        <p class="text-muted mb-0">Intelligent iOS crash analysis powered by LangChain + OpenAI</p>
+    </div>
+    <a href="/upload" class="btn btn-primary">
+        <i class="bi bi-cloud-upload me-2"></i>Analyze New Crash
+    </a>
+</div>
+
+<!-- API status banner -->
+{% if not api_configured %}
+<div class="api-banner mb-4 d-flex align-items-center gap-3">
+    <i class="bi bi-info-circle fs-5 text-accent"></i>
+    <div>
+        <strong>AI Analysis not configured.</strong>
+        Edit <code>.env</code> and set <code>OPENAI_API_KEY</code> to enable AI-powered root cause analysis.
+        Crash parsing and clustering still work without an API key.
+    </div>
+    <a href="/upload" class="btn btn-sm btn-primary ms-auto flex-shrink-0">Try Demo</a>
+</div>
+{% else %}
+<div class="api-banner mb-4 d-flex align-items-center gap-2">
+    <span class="text-success"><i class="bi bi-check-circle-fill"></i></span>
+    <span>AI Analysis active using model <strong class="text-accent">{{ model }}</strong></span>
+    {% if stats.symbolication_available %}
+    <span class="ms-3 text-success"><i class="bi bi-tools me-1"></i>symbolicatecrash available</span>
+    {% else %}
+    <span class="ms-3 text-muted"><i class="bi bi-tools me-1"></i>symbolicatecrash not found (Xcode required)</span>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Stats row -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-number">{{ stats.total_crashes }}</div>
+                    <div class="stat-label">Total Crashes</div>
+                </div>
+                <div class="stat-icon">🪲</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-number">{{ stats.analyzed }}</div>
+                    <div class="stat-label">AI Analyzed</div>
+                </div>
+                <div class="stat-icon">🤖</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-number">{{ stats.clusters }}</div>
+                    <div class="stat-label">Crash Clusters</div>
+                </div>
+                <div class="stat-icon">📊</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-number" style="color: {% if stats.symbolication_available %}var(--success){% else %}var(--text-muted){% endif %}">
+                        {{ '✓' if stats.symbolication_available else '✗' }}
+                    </div>
+                    <div class="stat-label">Symbolication</div>
+                </div>
+                <div class="stat-icon">🔑</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if stats.total_crashes == 0 %}
+<!-- Empty state -->
+<div class="text-center py-5">
+    <div style="font-size:5rem;">📱</div>
+    <h3 class="mt-3 fw-semibold">No crash logs yet</h3>
+    <p class="text-muted">Upload your first <code>.crash</code> or <code>.ips</code> file to get started</p>
+    <a href="/upload" class="btn btn-primary btn-lg mt-2">
+        <i class="bi bi-cloud-upload me-2"></i>Upload Crash Log
+    </a>
+</div>
+{% else %}
+
+<!-- Charts row -->
+{% if charts %}
+<div class="row g-3 mb-4">
+    {% if charts.exception_distribution %}
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body p-2">
+                <div class="chart-container">{{ charts.exception_distribution | safe }}</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% if charts.severity_distribution %}
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body p-2">
+                <div class="chart-container">{{ charts.severity_distribution | safe }}</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% if charts.root_cause_distribution %}
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body p-2">
+                <div class="chart-container">{{ charts.root_cause_distribution | safe }}</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% if charts.affected_components %}
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body p-2">
+                <div class="chart-container">{{ charts.affected_components | safe }}</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% if charts.cluster_analysis %}
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body p-2">
+                <div class="chart-container">{{ charts.cluster_analysis | safe }}</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Tag cloud -->
+{% if charts.tag_cloud %}
+<div class="card mb-4">
+    <div class="card-header d-flex align-items-center">
+        <i class="bi bi-tags me-2 text-accent"></i>
+        <span class="fw-semibold">Issue Tags</span>
+    </div>
+    <div class="card-body">
+        {% for tag in charts.tag_cloud %}
+        <span class="tag-item" style="font-size: {{ 0.75 + tag.weight * 0.4 }}rem;">
+            {{ tag.text }}
+            <span class="text-muted ms-1" style="font-size:0.7rem;">{{ tag.count }}</span>
+        </span>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endif %}
+
+<!-- Recent reports table -->
+<div class="card mb-4">
+    <div class="card-header d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-list-ul me-2 text-accent"></i>
+            <span class="fw-semibold">Recent Crash Reports</span>
+        </div>
+        <span class="badge" style="background:var(--bg-secondary);color:var(--text-secondary);">{{ stats.total_crashes }} total</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>File</th>
+                    <th>Process</th>
+                    <th>Version</th>
+                    <th>Exception</th>
+                    <th>Severity</th>
+                    <th>Root Cause</th>
+                    <th>Analyzed</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in recent_reports %}
+                <tr>
+                    <td>
+                        <span class="font-monospace text-muted" style="font-size:0.8rem;">
+                            {{ r.original_filename or r.file_name }}
+                        </span>
+                    </td>
+                    <td>{{ r.metadata.process if r.metadata else '—' }}</td>
+                    <td>
+                        <code style="font-size:0.8rem;">{{ r.metadata.version if r.metadata else '—' }}</code>
+                    </td>
+                    <td>
+                        <span style="font-size:0.8rem;color:#ffa657;">
+                            {{ r.exception.type if r.exception else '—' }}
+                        </span>
+                    </td>
+                    <td>
+                        {% set sev = r.severity | default('unknown') %}
+                        <span class="severity-badge badge-{{ sev }}">{{ sev }}</span>
+                    </td>
+                    <td>
+                        {% if r.root_cause_category and r.root_cause_category != 'unknown' %}
+                        <span class="tag-item" style="font-size:0.75rem;">{{ r.root_cause_category }}</span>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if r.analysis %}
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        {% else %}
+                        <i class="bi bi-dash-circle text-muted"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="/report/{{ r.id }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-eye me-1"></i>View
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Top clusters -->
+{% if clusters %}
+<div class="card mb-4">
+    <div class="card-header d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-diagram-3 me-2 text-accent"></i>
+            <span class="fw-semibold">Top Crash Clusters</span>
+        </div>
+        <a href="/clusters" class="btn btn-sm btn-outline-secondary">View All</a>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            {% for cluster in clusters %}
+            <div class="col-md-6 col-xl-4">
+                <div class="cluster-card">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="fw-semibold text-accent">#{{ cluster.cluster_id + 1 }}</span>
+                        <span class="badge" style="background:rgba(88,166,255,0.15);color:var(--accent);">
+                            {{ cluster.size }} crashes
+                        </span>
+                    </div>
+                    <div class="text-muted small mb-2">{{ cluster.exception_type }}</div>
+                    {% for frame in cluster.common_frames[:3] %}
+                    <div style="font-size:0.75rem;font-family:monospace;color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ frame }}">
+                        {{ frame }}
+                    </div>
+                    {% endfor %}
+                    {% if cluster.affected_versions %}
+                    <div class="mt-2">
+                        {% for v in cluster.affected_versions[:3] %}
+                        <span style="font-size:0.7rem;background:rgba(255,166,87,0.1);color:#ffa657;padding:2px 6px;border-radius:4px;margin-right:3px;">v{{ v }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endif %}
+{% endblock %}

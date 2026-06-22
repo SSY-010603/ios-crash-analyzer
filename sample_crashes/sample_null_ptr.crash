@@ -1,0 +1,72 @@
+Incident Identifier: A1B2C3D4-E5F6-7890-ABCD-EF1234567890
+CrashReporter Key:   abc123def456abc123def456abc123def456abc1
+Hardware Model:      iPhone15,2
+Process:             MyShoppingApp [1234]
+Path:                /private/var/containers/Bundle/Application/XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX/MyShoppingApp.app/MyShoppingApp
+Identifier:          com.example.myshoppingapp
+Version:             2.3.1 (231)
+Code Type:           ARM-64 (Native)
+Role:                Foreground
+Parent Process:      launchd [1]
+Coalition:           com.example.myshoppingapp [1234]
+
+Date/Time:           2024-01-15 14:32:07.891 +0800
+OS Version:          iPhone OS 17.2 (21C62)
+Release Type:        User
+Baseband Version:    4.00.00
+Report Version:      104
+
+Exception Type:  EXC_BAD_ACCESS (SIGSEGV)
+Exception Codes: KERN_INVALID_ADDRESS at 0x0000000000000010
+Exception Note:  EXC_CORPSE_NOTIFY
+Triggered by Thread:  0
+
+Thread 0 name:  Dispatch queue: com.apple.main-thread
+Thread 0 Crashed:
+0   libobjc.A.dylib                 0x000000019b2c7820 objc_msgSend + 32
+1   UIKitCore                       0x00000001c1234567 -[UIViewController viewDidLoad] + 0
+2   MyShoppingApp                   0x0000000100234abc -[ProductDetailViewController setupUI] + 156
+3   MyShoppingApp                   0x0000000100235def -[ProductDetailViewController viewDidLoad] + 88
+4   UIKitCore                       0x00000001c1abc123 -[UIViewController _sendViewDidLoadWithAppearanceProxyObjectTaggingEnabled] + 72
+5   UIKitCore                       0x00000001c1abc456 -[UIViewController loadViewIfRequired] + 1064
+6   UIKitCore                       0x00000001c1abc789 -[UIViewController view] + 28
+7   MyShoppingApp                   0x0000000100236789 -[AppDelegate application:didFinishLaunchingWithOptions:] + 312
+8   UIKitCore                       0x00000001c2345678 -[UIApplication _handleDelegateCallbacksWithOptions:isSuspended:restoreState:] + 296
+9   UIKitCore                       0x00000001c234abcd -[UIApplication _callInitializationDelegatesForMainScene:transitionContext:] + 3332
+10  UIKitCore                       0x00000001c2356789 -[UIApplication _runWithMainScene:transitionContext:completion:] + 1172
+11  UIKitCore                       0x00000001c2367890 -[_UISceneLifecycleMultiplexer completeCurrentTransition] + 376
+12  UIKitCore                       0x00000001c237abcd -[UIApplication workspaceDidEndTransaction:] + 188
+13  FrontBoardServices              0x00000001d1234abc __FBSSERIALQUEUE_IS_CALLING_OUT_TO_A_BLOCK__ + 52
+14  FrontBoardServices              0x00000001d1234def -[FBSSerialQueue _performNext] + 236
+15  FrontBoardServices              0x00000001d1235abc -[FBSSerialQueue _performNextFromRunLoopSource] + 72
+16  CoreFoundation                  0x00000001987abc12 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__ + 28
+17  CoreFoundation                  0x00000001987bcdef __CFRunLoopDoSources0 + 256
+18  CoreFoundation                  0x00000001987cdef0 __CFRunLoopRun + 828
+19  CoreFoundation                  0x00000001987def12 CFRunLoopRunSpecific + 608
+20  GraphicsServices                0x00000001e1abc123 GSEventRunModal + 164
+21  UIKitCore                       0x00000001c2389abc -[UIApplication _run] + 888
+22  UIKitCore                       0x00000001c238bcde UIApplicationMain + 340
+23  MyShoppingApp                   0x000000010023abcd main + 52
+24  dyld                            0x00000001a1234abc start + 2516
+
+Thread 1:
+0   libsystem_kernel.dylib          0x00000001987abc34 mach_msg2_trap + 8
+1   libsystem_kernel.dylib          0x00000001987abc56 mach_msg2_internal + 84
+2   libsystem_kernel.dylib          0x00000001987abc78 mach_msg_overwrite + 536
+3   CoreFoundation                  0x0000000199abc123 __CFRunLoopServiceMachPort + 160
+4   CoreFoundation                  0x0000000199abcdef __CFRunLoopRun + 1368
+5   CoreFoundation                  0x0000000199abd123 CFRunLoopRunSpecific + 608
+
+Thread 2 name:  com.apple.NSURLSession-work
+Thread 2:
+0   libsystem_kernel.dylib          0x000000019b1abc34 semaphore_wait_trap + 8
+1   libsystem_pthread.dylib         0x000000019b2abc56 _pthread_wait + 136
+2   libsystem_pthread.dylib         0x000000019b3abc78 pthread_cond_timedwait + 236
+3   Foundation                      0x00000001a0abc123 -[NSURLSession workQueue] + 0
+4   MyShoppingApp                   0x000000010024abcd -[NetworkManager fetchProduct:completion:] + 244
+
+Binary Images:
+       0x100228000 -        0x10025bfff MyShoppingApp arm64  <abcdef1234567890abcdef1234567890> /var/containers/Bundle/Application/XXXXXXXX/MyShoppingApp.app/MyShoppingApp
+    0x19b2c0000 -     0x19b2f0000 libobjc.A.dylib arm64  <fedcba0987654321fedcba0987654321> /usr/lib/libobjc.A.dylib
+    0x19870000 -     0x19980000 CoreFoundation arm64  <11223344556677881122334455667788> /System/Library/Frameworks/CoreFoundation.framework/CoreFoundation
+    0x1c1000000 -    0x1c4ffffff UIKitCore arm64  <aabbccddeeff0011aabbccddeeff0011> /System/Library/PrivateFrameworks/UIKitCore.framework/UIKitCore

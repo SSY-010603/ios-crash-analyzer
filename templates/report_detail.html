@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+{% block title %}{{ report.original_filename or report.file_name }} – Crash Report{% endblock %}
+
+{% block content %}
+{% set analysis = report.analysis %}
+{% set meta = report.metadata %}
+{% set exc = report.exception %}
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb" style="background:none;padding:0;margin:0;">
+        <li class="breadcrumb-item"><a href="/" class="text-accent text-decoration-none">Dashboard</a></li>
+        <li class="breadcrumb-item active text-muted">{{ report.original_filename or report.file_name }}</li>
+    </ol>
+</nav>
+
+<!-- Header -->
+<div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            {% set sev = report.severity | default('unknown') %}
+            <span class="severity-badge badge-{{ sev }} fs-6">{{ sev }}</span>
+            {% if report.symbolicated %}
+            <span class="tag-item"><i class="bi bi-check me-1"></i>Symbolicated</span>
+            {% endif %}
+            <span class="tag-item">{{ report.file_format | upper }}</span>
+        </div>
+        <h1 class="fw-bold mb-0" style="font-size:1.6rem;">
+            {{ report.original_filename or report.file_name }}
+        </h1>
+    </div>
+    <a href="/upload" class="btn btn-outline-secondary">
+        <i class="bi bi-cloud-upload me-2"></i>Upload Another
+    </a>
+</div>
+
+<div class="row g-4">
+    <!-- Left column -->
+    <div class="col-lg-8">
+
+        <!-- Root Cause Analysis -->
+        {% if analysis %}
+        <div class="card mb-4">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="bi bi-cpu text-accent fs-5"></i>
+                <span class="fw-semibold">AI Root Cause Analysis</span>
+                <span class="ms-auto">
+                    <span class="tag-item">{{ analysis.root_cause_category }}</span>
+                </span>
+            </div>
+            <div class="card-body">
+                <p class="mb-3" style="font-size:1.05rem;">{{ analysis.root_cause_description }}</p>
+
+                <!-- Confidence -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <small class="text-muted">AI Confidence</small>
+                        <small class="fw-semibold">{{ (analysis.root_cause_confidence * 100) | round | int }}%</small>
+                    </div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: {{ (analysis.root_cause_confidence * 100) | round | int }}%"></div>
+                    </div>
+                </div>
+
+                <!-- Exception description -->
+                <p class="text-muted small">{{ analysis.exception_description }}</p>
+
+                <!-- Evidence -->
+                {% if analysis.root_cause_evidence %}
+                <div class="section-title mt-3">Evidence</div>
+                {% for ev in analysis.root_cause_evidence %}
+                <div class="evidence-item">{{ ev }}</div>
+                {% endfor %}
+                {% endif %}
+
+                <!-- Tags -->
+                {% if analysis.tags %}
+                <div class="mt-3">
+                    {% for tag in analysis.tags %}
+                    <span class="tag-item">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Fix Suggestions -->
+        <div class="card mb-4">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="bi bi-wrench text-accent fs-5"></i>
+                <span class="fw-semibold">Fix Recommendations</span>
+            </div>
+            <div class="card-body">
+                {% for fix in analysis.fix_suggestions %}
+                <div class="fix-card fix-priority-{{ fix.priority }}">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="severity-badge badge-{{ 'high' if fix.priority == 'high' else ('medium' if fix.priority == 'medium' else 'low') }}" style="font-size:0.7rem;">
+                            {{ fix.priority }}
+                        </span>
+                        <strong>{{ fix.title }}</strong>
+                    </div>
+                    <p class="text-muted small mb-0">{{ fix.description }}</p>
+                    {% if fix.code_hint %}
+                    <pre class="mt-2 mb-0" style="background:#0d1117;padding:0.75rem;border-radius:6px;font-size:0.8rem;overflow-x:auto;"><code>{{ fix.code_hint }}</code></pre>
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+                <!-- Known issues -->
+                {% if analysis.similar_known_issues %}
+                <div class="section-title mt-3">Similar Known Issues</div>
+                {% for issue in analysis.similar_known_issues %}
+                <div class="evidence-item" style="border-color:#ffa657;">{{ issue }}</div>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="card mb-4">
+            <div class="card-body text-center py-4">
+                <div style="font-size:2.5rem;">🤖</div>
+                <h5 class="mt-2">AI Analysis Not Available</h5>
+                <p class="text-muted">Configure <code>OPENAI_API_KEY</code> in <code>.env</code> to enable AI-powered root cause analysis.</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Crash Stack Trace -->
+        <div class="card mb-4">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-list-ol text-accent fs-5"></i>
+                    <span class="fw-semibold">Crash Stack Trace</span>
+                    <small class="text-muted">(Thread #{{ exc.triggered_by_thread if exc else 0 }})</small>
+                </div>
+                <span class="text-muted small">{{ report.crashed_thread_frames | length }} frames</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="stack-trace">
+                    {% for frame in report.crashed_thread_frames %}
+                    {% set is_app = not (
+                        'libsystem' in frame.binary or
+                        'CoreFoundation' in frame.binary or
+                        'UIKit' in frame.binary or
+                        'Foundation' in frame.binary or
+                        'libobjc' in frame.binary or
+                        'libdispatch' in frame.binary or
+                        'libc++' in frame.binary
+                    ) %}
+                    <div class="frame-row">
+                        <span class="frame-num">{{ frame.frame }}</span>
+                        <span class="frame-binary {% if is_app %}frame-app{% endif %}">{{ frame.binary }}</span>
+                        <span class="frame-addr">{{ frame.address }}</span>
+                        <span class="frame-symbol {% if is_app %}frame-app{% endif %}">{{ frame.symbol }}</span>
+                    </div>
+                    {% else %}
+                    <span class="text-muted">No stack frames recorded</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Right column -->
+    <div class="col-lg-4">
+
+        <!-- Metadata card -->
+        <div class="card mb-3">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="bi bi-info-circle text-accent"></i>
+                <span class="fw-semibold">Crash Info</span>
+            </div>
+            <div class="card-body p-0">
+                <table class="table mb-0" style="font-size:0.85rem;">
+                    <tbody>
+                        <tr><td class="text-muted" style="width:40%">Process</td><td>{{ meta.process if meta else '—' }}</td></tr>
+                        <tr><td class="text-muted">Version</td><td><code>{{ meta.version if meta else '—' }}</code></td></tr>
+                        <tr><td class="text-muted">Build</td><td><code>{{ meta.build if meta else '—' }}</code></td></tr>
+                        <tr><td class="text-muted">OS Version</td><td>{{ meta.os_version if meta else '—' }}</td></tr>
+                        <tr><td class="text-muted">Device</td><td>{{ meta.hardware if meta else '—' }}</td></tr>
+                        <tr><td class="text-muted">Date</td><td style="font-size:0.78rem;">{{ meta.date_time if meta else '—' }}</td></tr>
+                        {% if meta and meta.incident_id %}
+                        <tr><td class="text-muted">Incident ID</td><td style="font-size:0.7rem;word-break:break-all;">{{ meta.incident_id }}</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Exception card -->
+        <div class="card mb-3">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-triangle text-accent"></i>
+                <span class="fw-semibold">Exception</span>
+            </div>
+            <div class="card-body p-0">
+                <table class="table mb-0" style="font-size:0.85rem;">
+                    <tbody>
+                        <tr><td class="text-muted" style="width:40%">Type</td>
+                            <td><span style="color:#ffa657;font-weight:600;">{{ exc.type if exc else '—' }}</span></td></tr>
+                        <tr><td class="text-muted">Codes</td><td><code>{{ exc.codes if exc else '—' }}</code></td></tr>
+                        {% if exc and exc.note %}
+                        <tr><td class="text-muted">Note</td><td>{{ exc.note }}</td></tr>
+                        {% endif %}
+                        {% if exc and exc.termination_reason %}
+                        <tr><td class="text-muted">Termination</td><td style="font-size:0.78rem;word-break:break-word;">{{ exc.termination_reason }}</td></tr>
+                        {% endif %}
+                        <tr><td class="text-muted">Thread</td><td>#{{ exc.triggered_by_thread if exc else 0 }}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- AI key frames -->
+        {% if analysis and analysis.key_frames %}
+        <div class="card mb-3">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="bi bi-pin-map text-accent"></i>
+                <span class="fw-semibold">Key Frames</span>
+            </div>
+            <div class="card-body p-2">
+                {% for frame in analysis.key_frames %}
+                <div class="mb-2 p-2 rounded" style="background:var(--bg-secondary);font-size:0.78rem;">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span style="color:#79c0ff;">{{ frame.binary_name }}</span>
+                        {% if frame.is_app_code %}
+                        <span class="tag-item" style="font-size:0.65rem;padding:1px 6px;">App Code</span>
+                        {% endif %}
+                    </div>
+                    <div class="font-monospace" style="color:var(--text-primary);word-break:break-all;">{{ frame.symbol }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Affected component -->
+        {% if analysis %}
+        <div class="card mb-3">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div style="font-size:2rem;">🎯</div>
+                <div>
+                    <div class="text-muted small">Affected Component</div>
+                    <div class="fw-semibold">{{ analysis.affected_component }}</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Stats -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="row g-2 text-center">
+                    <div class="col-6">
+                        <div class="stat-number" style="font-size:1.5rem;">{{ report.threads_count }}</div>
+                        <div class="stat-label">Threads</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-number" style="font-size:1.5rem;">{{ report.binary_images_count }}</div>
+                        <div class="stat-label">Binaries</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report meta -->
+        <div class="text-muted small mt-2">
+            <i class="bi bi-clock me-1"></i>Analyzed {{ report.generated_at[:19] if report.generated_at else '' }}
+            &nbsp;·&nbsp; ID: <code style="font-size:0.7rem;">{{ report.id[:8] }}…</code>
+        </div>
+    </div>
+</div>
+{% endblock %}

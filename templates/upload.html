@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Upload Crash – iOS Crash Analyzer{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="mb-4">
+            <h1 class="fw-bold mb-1" style="font-size:1.8rem;">
+                <i class="bi bi-cloud-upload text-accent me-2"></i>Analyze Crash Logs
+            </h1>
+            <p class="text-muted">Upload <code>.crash</code> or <code>.ips</code> files for AI-powered analysis</p>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data" id="uploadForm">
+                    <!-- Drop zone -->
+                    <div class="upload-zone mb-3" id="dropZone">
+                        <div class="upload-icon">📂</div>
+                        <h5 class="fw-semibold mb-1">Drop crash files here</h5>
+                        <p class="text-muted mb-3">or click to browse — supports .crash and .ips formats</p>
+                        <input type="file" name="crash_files" id="fileInput"
+                               accept=".crash,.ips,.txt" multiple
+                               class="d-none">
+                        <button type="button" class="btn btn-outline-secondary"
+                                onclick="document.getElementById('fileInput').click()">
+                            <i class="bi bi-folder2-open me-2"></i>Browse Files
+                        </button>
+                    </div>
+
+                    <!-- File list -->
+                    <div id="fileList" class="mb-3 d-none">
+                        <div class="section-title">Selected Files</div>
+                        <div id="fileItems"></div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2" id="submitBtn" disabled>
+                        <i class="bi bi-cpu me-2"></i>Analyze Crashes
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Processing info -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-gear me-2 text-accent"></i>
+                <span class="fw-semibold">Analysis Pipeline</span>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-sm-6 col-md-3 text-center">
+                        <div style="font-size:2rem;">📄</div>
+                        <div class="fw-semibold mt-1">1. Parse</div>
+                        <div class="text-muted small">Extract stack traces, metadata, binary images</div>
+                    </div>
+                    <div class="col-sm-6 col-md-3 text-center">
+                        <div style="font-size:2rem;">🔑</div>
+                        <div class="fw-semibold mt-1">2. Symbolicate</div>
+                        <div class="text-muted small">Resolve addresses using symbolicatecrash</div>
+                    </div>
+                    <div class="col-sm-6 col-md-3 text-center">
+                        <div style="font-size:2rem;">🤖</div>
+                        <div class="fw-semibold mt-1">3. AI Analysis</div>
+                        <div class="text-muted small">LangChain tool-calling + OpenAI structured output</div>
+                    </div>
+                    <div class="col-sm-6 col-md-3 text-center">
+                        <div style="font-size:2rem;">📊</div>
+                        <div class="fw-semibold mt-1">4. Cluster</div>
+                        <div class="text-muted small">Group similar crashes using TF-IDF similarity</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sample files notice -->
+        <div class="api-banner">
+            <div class="d-flex align-items-start gap-2">
+                <i class="bi bi-lightbulb text-accent mt-1"></i>
+                <div>
+                    <strong>Sample crash files</strong> are available in the <code>sample_crashes/</code> folder
+                    for testing. Try uploading <code>sample_null_ptr.crash</code> or <code>sample_memory.crash</code>.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const fileList = document.getElementById('fileList');
+const fileItems = document.getElementById('fileItems');
+const submitBtn = document.getElementById('submitBtn');
+
+function updateFileList(files) {
+    fileItems.innerHTML = '';
+    if (files.length === 0) {
+        fileList.classList.add('d-none');
+        submitBtn.disabled = true;
+        return;
+    }
+    fileList.classList.remove('d-none');
+    submitBtn.disabled = false;
+    submitBtn.textContent = `Analyze ${files.length} Crash${files.length > 1 ? 'es' : ''}`;
+    Array.from(files).forEach(f => {
+        const ext = f.name.split('.').pop().toLowerCase();
+        const icon = ext === 'ips' ? '📋' : '📄';
+        const size = (f.size / 1024).toFixed(1);
+        fileItems.innerHTML += `
+            <div class="d-flex align-items-center gap-2 p-2 mb-1 rounded"
+                 style="background:var(--bg-secondary);border:1px solid var(--border);">
+                <span>${icon}</span>
+                <span class="flex-grow-1 font-monospace" style="font-size:0.85rem;">${f.name}</span>
+                <span class="text-muted" style="font-size:0.8rem;">${size} KB</span>
+                <span class="badge" style="background:rgba(88,166,255,0.15);color:var(--accent);">.${ext}</span>
+            </div>`;
+    });
+}
+
+fileInput.addEventListener('change', () => updateFileList(fileInput.files));
+
+dropZone.addEventListener('click', e => {
+    if (e.target === dropZone || e.target.closest('.upload-icon') || e.target.tagName === 'H5' || e.target.tagName === 'P') {
+        fileInput.click();
+    }
+});
+
+['dragenter','dragover'].forEach(e => {
+    dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.add('drag-over'); });
+});
+['dragleave','dragend'].forEach(e => {
+    dropZone.addEventListener(e, ev => { dropZone.classList.remove('drag-over'); });
+});
+dropZone.addEventListener('drop', ev => {
+    ev.preventDefault();
+    dropZone.classList.remove('drag-over');
+    const dt = new DataTransfer();
+    Array.from(ev.dataTransfer.files).forEach(f => dt.items.add(f));
+    fileInput.files = dt.files;
+    updateFileList(fileInput.files);
+});
+
+document.getElementById('uploadForm').addEventListener('submit', () => {
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Analyzing…';
+    submitBtn.disabled = true;
+});
+</script>
+{% endblock %}

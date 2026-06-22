@@ -1,0 +1,61 @@
+Incident Identifier: C3D4E5F6-A7B8-9012-CDEF-012345678902
+CrashReporter Key:   ghi789jkl012ghi789jkl012ghi789jkl012ghi7
+Hardware Model:      iPhone15,4
+Process:             MyShoppingApp [9012]
+Path:                /private/var/containers/Bundle/Application/ZZZZZZZZ-ZZZZ-ZZZZ-ZZZZ-ZZZZZZZZZZZZ/MyShoppingApp.app/MyShoppingApp
+Identifier:          com.example.myshoppingapp
+Version:             2.3.1 (231)
+Code Type:           ARM-64 (Native)
+Role:                Foreground
+Parent Process:      launchd [1]
+Coalition:           com.example.myshoppingapp [9012]
+
+Date/Time:           2024-01-17 22:07:12.445 +0800
+OS Version:          iPhone OS 17.2.1 (21C66)
+Release Type:        User
+Report Version:      104
+
+Exception Type:  EXC_CRASH (SIGABRT)
+Exception Codes: 0x0000000000000000, 0x0000000000000000
+Exception Note:  EXC_CORPSE_NOTIFY
+Termination Reason: Namespace SPRINGBOARD, Code 0x8badf00d
+Triggered by Thread:  0
+
+Application Specific Information:
+Elapsed total CPU time (seconds): 10.130 (user 10.090, system 0.040), 100% CPU
+Elapsed application CPU time (seconds): 8.780, 87% CPU
+
+Elapsed total CPU time (seconds): 10.130 (user 10.090, system 0.040), 100% CPU
+Elapsed application CPU time (seconds): 8.780, 87% CPU
+
+MyShoppingApp has active assertions preventing suspending for 10.17s:
+  BackgroundTask - 50s ("ImageDownloadTask"), from <MyShoppingApp`-[ImageDownloadManager beginBackgroundTask] + 64> active for 10.17s
+
+Thread 0 name:  Dispatch queue: com.apple.main-thread
+Thread 0 Crashed:
+0   libsystem_kernel.dylib          0x00000001987ab234 mach_msg2_trap + 8
+1   libsystem_kernel.dylib          0x00000001987bc345 mach_msg2_internal + 84
+2   libsystem_kernel.dylib          0x00000001987cd456 mach_msg_overwrite + 536
+3   CoreFoundation                  0x000000019a1bc234 __CFRunLoopServiceMachPort + 160
+4   CoreFoundation                  0x000000019a1cd345 __CFRunLoopRun + 1368
+5   CoreFoundation                  0x000000019a1de456 CFRunLoopRunSpecific + 608
+6   GraphicsServices                0x00000001e1abc123 GSEventRunModal + 164
+7   UIKitCore                       0x00000001c2389abc -[UIApplication _run] + 888
+8   UIKitCore                       0x00000001c238bcde UIApplicationMain + 340
+9   MyShoppingApp                   0x000000010023abcd main + 52
+10  dyld                            0x00000001a1234abc start + 2516
+
+Thread 1 name:  com.example.myshoppingapp.image-download
+Thread 1:
+0   libsystem_kernel.dylib          0x00000001987de567 semaphore_wait_trap + 8
+1   libsystem_pthread.dylib         0x00000001987ef678 _pthread_wait + 136
+2   libsystem_c.dylib               0x00000001987f0789 pthread_cond_timedwait + 236
+3   MyShoppingApp                   0x000000010026abcd -[ImageDownloadManager synchronousDownload:] + 488
+4   MyShoppingApp                   0x000000010026bcde -[ImageDownloadManager processQueue] + 244
+5   MyShoppingApp                   0x000000010026cdef -[ImageDownloadManager startDownloading] + 88
+6   Foundation                      0x00000001a0abcdef -[NSThread main] + 36
+7   libsystem_pthread.dylib         0x00000001987ab345 _pthread_start + 148
+
+Binary Images:
+       0x100228000 -        0x10025bfff MyShoppingApp arm64  <abcdef1234567890abcdef1234567890> /var/containers/Bundle/Application/ZZZZZZZZ/MyShoppingApp.app/MyShoppingApp
+    0x1c1000000 -    0x1c4ffffff UIKitCore arm64  <aabbccddeeff0011aabbccddeeff0011> /System/Library/PrivateFrameworks/UIKitCore.framework/UIKitCore
